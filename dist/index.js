@@ -17,6 +17,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Action = void 0;
+exports.splitIntoGroups = splitIntoGroups;
+function splitIntoGroups(list, targetGroupSize) {
+    if (list.length === 0) {
+        return [];
+    }
+    const groupCount = Math.ceil(list.length / targetGroupSize);
+    const baseSize = Math.floor(list.length / groupCount);
+    const remainder = list.length % groupCount;
+    const groups = [];
+    let offset = 0;
+    for (let i = 0; i < groupCount; i++) {
+        const size = baseSize + (i < remainder ? 1 : 0);
+        groups.push(list.slice(offset, offset + size));
+        offset += size;
+    }
+    return groups;
+}
 class Action {
     static fromOptions(actionOptions) {
         return new Action(actionOptions);
@@ -26,10 +43,16 @@ class Action {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.options.logger(`Running with placeholder: ${this.options.placeholder}`);
-            return {
-                placeholder: this.options.placeholder,
-            };
+            const { matrix, targetGroupSize, resultFormat, resultFormatPlainSeparator, resultItemPrefix, logger } = this.options;
+            logger(`Splitting ${matrix.length} items into groups of ${targetGroupSize}`);
+            logger(`Result format: ${resultFormat}, separator: "${resultFormatPlainSeparator}", prefix: "${resultItemPrefix}"`);
+            if (matrix.length === 0) {
+                return { matrix: [] };
+            }
+            const groups = splitIntoGroups(matrix, targetGroupSize);
+            const result = groups.map((group) => group.map((item) => `${resultItemPrefix}${item}`).join(resultFormatPlainSeparator));
+            logger(`Created ${result.length} groups`);
+            return { matrix: result };
         });
     }
 }
@@ -48,7 +71,11 @@ exports.parseActionInput = parseActionInput;
 const parse_1 = __nccwpck_require__(789);
 function parseActionInput(raw) {
     return {
-        placeholder: (0, parse_1.parseNonEmptyString)(raw.placeholder),
+        matrix: (0, parse_1.parseJsonStringArray)(raw.matrix),
+        targetGroupSize: (0, parse_1.parsePositiveInteger)(raw.targetGroupSize),
+        resultFormat: (0, parse_1.parseResultFormat)(raw.resultFormat),
+        resultFormatPlainSeparator: raw.resultFormatPlainSeparator,
+        resultItemPrefix: raw.resultItemPrefix,
     };
 }
 
@@ -75,12 +102,16 @@ const action_1 = __nccwpck_require__(1536);
 const input_1 = __nccwpck_require__(2868);
 function getActionInput() {
     return (0, input_1.parseActionInput)({
-        placeholder: (0, core_1.getInput)("placeholder"),
+        matrix: (0, core_1.getInput)("matrix"),
+        targetGroupSize: (0, core_1.getInput)("target-group-size"),
+        resultFormat: (0, core_1.getInput)("result-format"),
+        resultFormatPlainSeparator: (0, core_1.getInput)("result-format-plain-separator", { trimWhitespace: false }),
+        resultItemPrefix: (0, core_1.getInput)("result-item-prefix", { trimWhitespace: false }),
     });
 }
 function setActionOutput(actionResult) {
     (0, core_1.info)(`Action result: ${JSON.stringify(actionResult)}`);
-    (0, core_1.setOutput)("placeholder", actionResult.placeholder);
+    (0, core_1.setOutput)("matrix", JSON.stringify(actionResult.matrix));
 }
 function _main() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -93,7 +124,7 @@ function _main() {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            _main();
+            yield _main();
         }
         catch (error) {
             if (error instanceof Error) {
@@ -116,7 +147,7 @@ main();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseNonEmptyString = void 0;
+exports.parseResultFormat = exports.parsePositiveInteger = exports.parseJsonStringArray = exports.parseNonEmptyString = void 0;
 const parseNonEmptyString = (value) => {
     if (!value) {
         throw new Error(`Invalid ${value}, must be a non-empty string`);
@@ -127,6 +158,41 @@ const parseNonEmptyString = (value) => {
     return value;
 };
 exports.parseNonEmptyString = parseNonEmptyString;
+const parseJsonStringArray = (value) => {
+    let parsed;
+    try {
+        parsed = JSON.parse(value);
+    }
+    catch (_a) {
+        throw new Error(`Invalid JSON: ${value}`);
+    }
+    if (!Array.isArray(parsed)) {
+        throw new Error(`Expected a JSON array, got: ${typeof parsed}`);
+    }
+    for (const item of parsed) {
+        if (typeof item !== "string") {
+            throw new Error(`Expected all items to be strings, got: ${typeof item}`);
+        }
+    }
+    return parsed;
+};
+exports.parseJsonStringArray = parseJsonStringArray;
+const parsePositiveInteger = (value) => {
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+        throw new Error(`Invalid ${value}, must be a positive integer`);
+    }
+    return parsed;
+};
+exports.parsePositiveInteger = parsePositiveInteger;
+const VALID_RESULT_FORMATS = ["plain"];
+const parseResultFormat = (value) => {
+    if (!VALID_RESULT_FORMATS.includes(value)) {
+        throw new Error(`Invalid result-format "${value}", must be one of: ${VALID_RESULT_FORMATS.join(", ")}`);
+    }
+    return value;
+};
+exports.parseResultFormat = parseResultFormat;
 
 
 /***/ }),

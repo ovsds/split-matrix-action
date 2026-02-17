@@ -24,23 +24,129 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Test Run
-        id: test-run
+      - name: Test with defaults
+        id: test-defaults
         uses: ./
         with:
-          placeholder: "test_placeholder"
+          matrix: '["a","b","c"]'
 
-      - name: Assert placeholder
+      - name: Assert default output
         uses: nick-fields/assert-action@v2
         with:
-          actual: ${{ steps.test-run.outputs.placeholder }}
-          expected: "test_placeholder"
+          actual: ${{ steps.test-defaults.outputs.matrix }}
+          expected: '["a b c"]'
+
+  e2e-group-size:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Test with group size
+        id: test-group-size
+        uses: ./
+        with:
+          matrix: '["a","b","c","d","e"]'
+          target-group-size: 2
+
+      - name: Assert grouped output
+        uses: nick-fields/assert-action@v2
+        with:
+          actual: ${{ steps.test-group-size.outputs.matrix }}
+          expected: '["a b","c d","e"]'
+
+  e2e-prefix:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Test with prefix
+        id: test-prefix
+        uses: ./
+        with:
+          matrix: '["pkg-1","pkg-2","pkg-3"]'
+          target-group-size: 2
+          result-item-prefix: "/data/"
+
+      - name: Assert prefixed output
+        uses: nick-fields/assert-action@v2
+        with:
+          actual: ${{ steps.test-prefix.outputs.matrix }}
+          expected: '["/data/pkg-1 /data/pkg-2","/data/pkg-3"]'
+
+  e2e-separator:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Test with custom separator
+        id: test-separator
+        uses: ./
+        with:
+          matrix: '["a","b","c"]'
+          target-group-size: 2
+          result-format-plain-separator: ","
+
+      - name: Assert separator output
+        uses: nick-fields/assert-action@v2
+        with:
+          actual: ${{ steps.test-separator.outputs.matrix }}
+          expected: '["a,b","c"]'
+
+  e2e-empty:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Test with empty array
+        id: test-empty
+        uses: ./
+        with:
+          matrix: "[]"
+
+      - name: Assert empty output
+        uses: nick-fields/assert-action@v2
+        with:
+          actual: ${{ steps.test-empty.outputs.matrix }}
+          expected: "[]"
+
   e2e:
     runs-on: ubuntu-latest
     if: always() && !cancelled()
 
     needs:
       - e2e-default
+      - e2e-group-size
+      - e2e-prefix
+      - e2e-separator
+      - e2e-empty
 
     steps:
       - name: Collect Results
