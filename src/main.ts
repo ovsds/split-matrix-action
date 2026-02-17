@@ -5,13 +5,17 @@ import { ActionInput, parseActionInput } from "./input";
 
 function getActionInput(): ActionInput {
   return parseActionInput({
-    placeholder: getInput("placeholder"),
+    matrix: getInput("matrix"),
+    targetGroupSize: getInput("target-group-size"),
+    resultFormat: getInput("result-format"),
+    resultFormatPlainSeparator: getInput("result-format-plain-separator", { trimWhitespace: false }),
+    resultItemPrefix: getInput("result-item-prefix", { trimWhitespace: false }),
   });
 }
 
 function setActionOutput(actionResult: ActionResult): void {
   info(`Action result: ${JSON.stringify(actionResult)}`);
-  setOutput("placeholder", actionResult.placeholder);
+  setOutput("matrix", JSON.stringify(actionResult.matrix));
 }
 
 async function _main(): Promise<void> {
@@ -26,7 +30,7 @@ async function _main(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    _main();
+    await _main();
   } catch (error) {
     if (error instanceof Error) {
       setFailed(error.message);

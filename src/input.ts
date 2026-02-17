@@ -1,15 +1,27 @@
-import { parseNonEmptyString } from "./utils/parse";
+import { ResultFormat, parseJsonStringArray, parsePositiveInteger, parseResultFormat } from "./utils/parse";
 
 export interface RawActionInput {
-  placeholder: string;
+  matrix: string;
+  targetGroupSize: string;
+  resultFormat: string;
+  resultFormatPlainSeparator: string;
+  resultItemPrefix: string;
 }
 
 export interface ActionInput {
-  placeholder: string;
+  matrix: string[];
+  targetGroupSize: number;
+  resultFormat: ResultFormat;
+  resultFormatPlainSeparator: string;
+  resultItemPrefix: string;
 }
 
 export function parseActionInput(raw: RawActionInput): ActionInput {
   return {
-    placeholder: parseNonEmptyString(raw.placeholder),
+    matrix: parseJsonStringArray(raw.matrix),
+    targetGroupSize: parsePositiveInteger(raw.targetGroupSize),
+    resultFormat: parseResultFormat(raw.resultFormat),
+    resultFormatPlainSeparator: raw.resultFormatPlainSeparator,
+    resultItemPrefix: raw.resultItemPrefix,
   };
 }

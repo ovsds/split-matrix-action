@@ -1,23 +1,42 @@
 name: "Split Matrix"
 description: |
-  Split Matrix Action
+  Splits a JSON array into groups for GitHub Actions matrix strategy.
 
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 branding:
-  icon: "message-square"
+  icon: "grid"
   color: "gray-dark"
 
 inputs:
-  placeholder:
+  matrix:
     description: |
-      Placeholder input to be replaced by real inputs
+      JSON array of strings to split into groups
     required: true
-    default: "placeholder"
+  target-group-size:
+    description: |
+      Number of items per group
+    required: false
+    default: "10"
+  result-format:
+    description: |
+      Output format for groups. Supported: "plain"
+    required: false
+    default: "plain"
+  result-format-plain-separator:
+    description: |
+      Separator to join items within a group (used when result-format is "plain")
+    required: false
+    default: " "
+  result-item-prefix:
+    description: |
+      Prefix to prepend to each item
+    required: false
+    default: ""
 
 outputs:
-  placeholder:
+  matrix:
     description: |
-      Placeholder output to be replaced by real outputs
+      JSON array of grouped strings
 
 runs:
   using: node24
