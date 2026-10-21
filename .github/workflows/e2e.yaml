@@ -20,18 +20,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test with defaults
         id: test-defaults
-        uses: ./
+        uses: $/
         with:
           matrix: '["a","b","c"]'
 
       - name: Assert default output
-        uses: nick-fields/assert-action@v2
+        uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
         with:
           actual: ${{ steps.test-defaults.outputs.matrix }}
           expected: '["a b c"]'
@@ -44,19 +44,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test with group size
         id: test-group-size
-        uses: ./
+        uses: $/
         with:
           matrix: '["a","b","c","d","e"]'
           target-group-size: 2
 
       - name: Assert grouped output
-        uses: nick-fields/assert-action@v2
+        uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
         with:
           actual: ${{ steps.test-group-size.outputs.matrix }}
           expected: '["a b","c d","e"]'
@@ -69,20 +69,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test with prefix
         id: test-prefix
-        uses: ./
+        uses: $/
         with:
           matrix: '["pkg-1","pkg-2","pkg-3"]'
           target-group-size: 2
           result-item-prefix: "/data/"
 
       - name: Assert prefixed output
-        uses: nick-fields/assert-action@v2
+        uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
         with:
           actual: ${{ steps.test-prefix.outputs.matrix }}
           expected: '["/data/pkg-1 /data/pkg-2","/data/pkg-3"]'
@@ -95,20 +95,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test with custom separator
         id: test-separator
-        uses: ./
+        uses: $/
         with:
           matrix: '["a","b","c"]'
           target-group-size: 2
           result-format-plain-separator: ","
 
       - name: Assert separator output
-        uses: nick-fields/assert-action@v2
+        uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
         with:
           actual: ${{ steps.test-separator.outputs.matrix }}
           expected: '["a,b","c"]'
@@ -121,18 +121,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test with empty array
         id: test-empty
-        uses: ./
+        uses: $/
         with:
           matrix: "[]"
 
       - name: Assert empty output
-        uses: nick-fields/assert-action@v2
+        uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
         with:
           actual: ${{ steps.test-empty.outputs.matrix }}
           expected: "[]"
@@ -140,6 +140,8 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     if: always() && !cancelled()
+
+    permissions: {}
 
     needs:
       - e2e-default
@@ -150,7 +152,7 @@ jobs:
 
     steps:
       - name: Collect Results
-        uses: ovsds/collect-needs-result-action@v1
+        uses: ovsds/collect-needs-result-action@12190e2a1bfe85d9c024f190a3833973e97998f8 # v1.0.0
         with:
           needs_json: ${{ toJson(needs) }}
           skip_allowed: false
